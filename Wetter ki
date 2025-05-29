@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wetter Vorhersage KI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    nav {
+      backdrop-filter: blur(6px);
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 2px solid #00aaff;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav .logo img {
+      height: 40px; /* Hier die Höhe anpassen, wie gewünscht */
+    }
+
+    .menu-toggle {
+      font-size: 1.6em;
+      cursor: pointer;
+      color: #00aaff;
+    }
+
+    .menu {
+      display: none;
+      flex-direction: column;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      transition: all 0.3s ease;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      margin: 5px 0;
+      padding: 8px;
+      font-size: 1.2em;
+      border-bottom: 1px solid #00aaff44;
+      transition: background 0.3s;
+    }
+
+    .menu a:hover {
+      background-color: #00aaff22;
+      border-radius: 5px;
+    }
+
+    .section {
+      display: none;
+      padding: 20px;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 15px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      margin: 10px 0;
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: none;
+    }
+
+    input.error {
+      border: 2px solid red;
+    }
+
+    button {
+      background-color: #00aaff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0088cc;
+    }
+
+    img.weather-img {
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin: 20px auto;
+      border-radius: 10px;
+    }
+
+    .result {
+      background-color: #333;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .emoji {
+      font-size: 2em;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    ul#history {
+      padding-left: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .menu {
+        flex-direction: row;
+        justify-content: center;
+        display: flex !important;
+      }
+
+      .menu a {
+        margin: 0 10px;
+        border-bottom: none;
+      }
+
+      .menu-toggle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <strong><p>WetterApp&WeatherApp</p></strong>
+      <p />
+    </div>
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+  </nav>
+
+  <div class="menu" id="menu">
+    <a href="#" onclick="showSection('home')">Startseite</a>
+    <a href="#" onclick="showSection('ki')">Wetter-KI</a>
+    <a href="#" onclick="showSection('map')">Map</a>
+    <a href="#" onclick="showSection('impressum')">Impressum</a>
+    <a href="#" onclick="showSection('settings')">Einstellungen</a>
+  </div>
+
+  <div id="home" class="section active">
+    <div class="container">
+      <h1>⛅ Wetter Vorhersage KI ⛅</h1>
+      <p>Willkommen bei unserer intelligenten WetterApp! Hier kannst du mit Hilfe einfacher künstlicher Intelligenz die Temperatur des kommenden Tages vorhersagen...</p>
+      <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Wetterbild" class="weather-img" />
+    </div>
+  </div>
+
+  <div id="ki" class="section">
+    <div class="container">
+      <h2>Wettervorhersage mit KI</h2>
+      <label>Temperatur (Vortag in °C):</label>
+      <input type="number" id="temp"><label>Feuchtigkeit (%):</label>
+      <input type="number" id="humidity">
+      <label>Windgeschwindigkeit (km/h):</label>
+      <input type="number" id="wind">
+      <label>Bewölkung (%):</label>
+      <input type="number" id="clouds">
+      <button onclick="predict()">Vorhersagen</button>
+      <button onclick="resetFields()">Zurücksetzen</button>
+
+      <div id="result" class="result">
+        <div class="emoji">🌧️</div>
+      </div>
+      <div id="error-message" class="error-message"></div>
+
+      <h3>Vorhersageverlauf:</h3>
+      <ul id="history"></ul>
+    </div>
+  </div>
+
+  <div id="map" class="section">
+    <div class="container">
+      <h2>WetterWelt Karte</h2>
+      <iframe src="https://embed.windy.com/embed2.html?lat=51.0&lon=10.0&zoom=5&level=surface&overlay=rain&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=50&detailLon=10&metricWind=km/h&metricTemp=°C&radarRange=-1" width="100%" height="400" frameborder="0" style="border-radius: 15px;"></iframe>
+    </div>
+  </div>
+
+  <div id="impressum" class="section">
+    <div class="container">
+      <h2>Impressum</h2>
+      <p><strong>Verantwortlich:</strong> Trolle Berger</p>
+      <p><strong>Adresse:</strong> Beim Brandenburger Tor, 10115 Berlin</p>
+      <p><strong>E-Mail:</strong> troll@müllmail.com</p>
+      <p><strong>Telefon:</strong> +49 123 4567890</p>
+    </div>
+  </div>
+
+  <div id="settings" class="section">
+    <div class="container">
+      <h2>Einstellungen</h2>
+      <label>Sprache:</label>
+      <select id="language" onchange="changeLanguage()">
+        <option value="de">Deutsch</option>
+        <option value="en">English</option>
+      </select>
+      <br><br>
+      <button onclick="clearHistory()">Verlauf löschen</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    }
+
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      if (window.innerWidth < 768) document.getElementById("menu").style.display = "none";
+    }
+
+    function changeLanguage() {
+      const lang = document.getElementById("language").value;
+      if (lang === "en") {
+        document.querySelector("h1").innerText = "⛅ Weather Forecast AI ⛅";
+        // Add more translation changes here as needed.
+      } else {
+        document.querySelector("h1").innerText = "⛅ Wetter Vorhersage KI ⛅";
+        // Add more translation changes here as needed.
+      }
+    }
+
+    function clearHistory() {
+      document.getElementById("history").innerHTML = '';
+    }
+
+    function predict() {
+      // Prediction function logic...
+    }
+
+    function resetFields() {
+      // Reset input fields logic...
+    }
+  </script>
+</body>
+</html>
